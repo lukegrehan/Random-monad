@@ -1,4 +1,4 @@
-module Random where
+module Random(Rand, randAsIO, getGen, random, randomR, randoms, randomRs) where
 
 import System.Random (StdGen)
 import qualified System.Random as R
