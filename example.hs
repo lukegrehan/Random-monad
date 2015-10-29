@@ -1,6 +1,7 @@
 import Random
 import Control.Monad
 import Data.List
+import Control.Monad.Identity
 
 data RPS = Rock | Paper | Scissors deriving (Enum, Show, Read, Eq)
 
@@ -15,7 +16,7 @@ randomMove :: Rand RPS
 randomMove = toEnum <$> (randomR (0,2))
 
 aiMove :: IO RPS
-aiMove = randAsIO randomMove
+aiMove = runRand randomMove
 
 playerMove :: IO RPS
 playerMove = read <$> getLine
