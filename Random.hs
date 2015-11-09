@@ -56,3 +56,20 @@ randoms = RandT $ \g ->
 randomRs :: (Monad m, R.Random a) => (a,a) -> RandT m [a]
 randomRs range = RandT $ \g ->
   let (og, ng) = R.split g in return (R.randomRs range og, ng)
+
+-----
+
+-- 'pluck' a random item from a list
+pluck :: Monad m => [a] -> RandT m (Maybe a, [a])
+pluck [] = return (Nothing, [])
+pluck as = do
+  n <- randomR (0, (length as)-1)
+  return (Just (as !! n), (take n as) ++ (drop (n+1) as))
+
+-- shuffle a list
+shuffle :: Monad m => [a] -> RandT m [a]
+shuffle [] = return []
+shuffle as = do
+  (Just a, rest) <- pluck as
+  shufR <- shuffle rest
+  return (a:shufR)
