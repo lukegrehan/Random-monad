@@ -33,7 +33,7 @@ instance Monad m => Monad (RandT m) where
   return a = RandT $ \g -> return (a, g)
   (RandT a) >>= f = RandT $ \g -> do
     (a', g') <- a g
-    runRandT (f a') g
+    runRandT (f a') g'
 
 instance MonadTrans RandT where
   lift a = RandT $ \g -> do
