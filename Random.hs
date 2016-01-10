@@ -8,7 +8,7 @@ import Control.Monad.Trans
 import Control.Monad.Identity
 
 data RandT m a = RandT { runRandT :: (StdGen -> m (a,StdGen)) }
-type Rand a = RandT Identity a
+type Rand = RandT Identity
 
 runRand :: Rand a -> IO a
 runRand = (return . runIdentity) <=< randAsIO
@@ -16,11 +16,8 @@ runRand = (return . runIdentity) <=< randAsIO
 randAsIO :: Monad m => RandT m a -> IO (m a)
 randAsIO i = R.newStdGen >>= return . (fst <$>) . runRandT i
 
-getGen :: Monad m => RandT m StdGen
-getGen = RandT $ \g -> return (g,g)
-
-useGen :: Monad m => RandT m (a, StdGen) -> RandT m a
-useGen r = RandT $ ((fst <$>) . (runRandT r))
+withGen :: Monad m => (StdGen -> (a,StdGen)) -> RandT m a
+withGen f = RandT (return . f)
 
 instance Monad m => Functor (RandT m) where
   fmap f a = pure f <*> a
@@ -44,10 +41,10 @@ instance MonadIO m => MonadIO (RandT m) where
   liftIO = lift.liftIO
 
 random :: (Monad m, R.Random a) => RandT m a
-random = useGen $ R.random <$> getGen
+random = withGen R.random
 
 randomR :: (Monad m, R.Random a) => (a,a) -> RandT m a
-randomR range = useGen $ R.randomR range <$> getGen
+randomR range = withGen $ R.randomR range
 
 randoms :: (Monad m, R.Random a) => RandT m [a]
 randoms = RandT $ \g ->
